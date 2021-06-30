@@ -16,6 +16,7 @@ public class ApiConfig {
 	String clientId;
 	String clientSecret;
 	String redirectURI;
+	String URISuffix = "";
 	SessionRefreshListener sessionRefreshListener;
 	ObjectMapper objectMapper;
 	int requestTimeout = 0; // in milliseconds, defaults to 0 which is no timeout (infinity)
@@ -34,6 +35,7 @@ public class ApiConfig {
 			.setClientId(clientId)
 			.setClientSecret(clientSecret)
 			.setRedirectURI(redirectURI)
+			.setURISuffix(URISuffix)
 			.setObjectMapper(objectMapper)
 			.setRequestTimeout(requestTimeout);
 	}
@@ -65,6 +67,16 @@ public class ApiConfig {
 	
 	public ApiConfig setRedirectURI(String redirectURI) {
 		this.redirectURI = redirectURI;
+		return this;
+	}
+
+	/**
+	 * String appended to the base URI
+	 * @param URISuffix
+	 * @return
+	 */
+	public ApiConfig setURISuffix(String URISuffix) {
+		this.URISuffix = URISuffix;
 		return this;
 	}
 
@@ -145,6 +157,10 @@ public class ApiConfig {
 	
 	public String getRedirectURI() {
 		return redirectURI;
+	}
+
+	public String getURISuffix() {
+		return URISuffix;
 	}
 
 	public SessionRefreshListener getSessionRefreshListener() { return sessionRefreshListener; }

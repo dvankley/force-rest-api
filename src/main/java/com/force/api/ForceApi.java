@@ -52,7 +52,6 @@ public class ForceApi {
 	final ApiConfig config;
 	ApiSession session;
 	private boolean autoRenew = false;
-	boolean useRootPath = false;
 
 	public ForceApi(ApiConfig config, ApiSession session) {
 		this.config = config;
@@ -79,25 +78,13 @@ public class ForceApi {
 		return session;
 	}
 
-	public ForceApi rootPath() {
-		ForceApi clone = new ForceApi(this.config, this.session);
-        clone.useRootPath=true;
-		return clone;
-	}
-
 	public String curlHelper() {
 		return "curl -s -H 'Authorization: Bearer "+session.getAccessToken()+"' "+uriBase()+" | jq .";
 	}
 
-	/**
-	 * sends a custom REST API GET request
-	 *
-	 * @param path     service path to be called - i.e. /process/approvals/
-	 * @return response from API wrapped in a ResourceRepresentation for multiple deserialization options.
-	 */
 	public ResourceRepresentation get(String path) {
 		return new ResourceRepresentation(apiRequest(new HttpRequest()
-				.url(uriBaseOrRoot()+path)
+				.url(uriBase()+path)
 				.method("GET")
 				.header("Accept", "application/json")),
 				jsonMapper);
@@ -114,7 +101,7 @@ public class ForceApi {
 	 */
 	public ResourceRepresentation delete(String path) {
 		return new ResourceRepresentation(apiRequest(new HttpRequest()
-				.url(uriBaseOrRoot() + path)
+				.url(uriBase() + path)
 				.method("DELETE")
 				.header("Accept", "application/json")),
 				jsonMapper);
@@ -157,7 +144,7 @@ public class ForceApi {
 	public ResourceRepresentation request(String method, String path, Object input) {
 		try {
 			return new ResourceRepresentation(apiRequest(new HttpRequest()
-					.url(uriBaseOrRoot() + path)
+					.url(uriBase() + path)
 					.method(method)
 					.header("Accept", "application/json")
 					.header("Content-Type", "application/json")
@@ -217,6 +204,7 @@ public class ForceApi {
 			// But it would be nice to have a streaming implementation. We can do that
 			// by using ObjectMapper.writeValue() passing in output stream, but then we have
 			// polluted the Http layer.
+			String test = jsonMapper.writeValueAsString(sObject);
 			CreateResponse result = jsonMapper.readValue(apiRequest(new HttpRequest()
 					.url(uriBase()+"/sobjects/"+type)
 					.method("POST")
@@ -482,15 +470,7 @@ public class ForceApi {
 	}
 
 	private final String uriBase() {
-		return(session.getApiEndpoint()+"/services/data/"+config.getApiVersionString());
-	}
-
-	private final String uriBaseOrRoot() {
-		if(useRootPath) {
-			return(session.getApiEndpoint());
-		} else {
-			return(session.getApiEndpoint()+"/services/data/"+config.getApiVersionString());
-		}
+		return(session.getApiEndpoint()+"/services/data/"+config.getApiVersionString()+config.getURISuffix());
 	}
 
 	private final HttpResponse apiRequest(HttpRequest req) {
